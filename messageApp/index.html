@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messaging App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Messaging App</h1>
+        <div class="messages" id="messages">
+            <!-- Messages will be loaded here -->
+        </div>
+        <form id="messageForm">
+            <input type="text" id="username" placeholder="Your name" required>
+            <input type="text" id="message" placeholder="Type a message" required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const messagesDiv = document.getElementById("messages");
+            const messageForm = document.getElementById("messageForm");
+            const usernameInput = document.getElementById("username");
+            const messageInput = document.getElementById("message");
+
+            function loadMessages() {
+                fetch("messages.php")
+                    .then(response => response.json())
+                    .then(data => {
+                        messagesDiv.innerHTML = "";
+                        data.forEach(message => {
+                            const messageElement = document.createElement("div");
+                            messageElement.classList.add("message");
+                            messageElement.innerHTML = `<strong>${message.username}:</strong> ${message.message}`;
+                            messagesDiv.appendChild(messageElement);
+                        });
+                    });
+            }
+
+            messageForm.addEventListener("submit", function(e) {
+                e.preventDefault();
+                const username = usernameInput.value;
+                const message = messageInput.value;
+
+                fetch("messages.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ username, message })
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          messageInput.value = "";
+                          loadMessages();
+                      }
+                  });
+            });
+
+            loadMessages();
+            setInterval(loadMessages, 5000); // Refresh messages every 5 seconds
+        });
+    </script>
+</body>
+</html>
